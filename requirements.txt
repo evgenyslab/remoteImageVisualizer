@@ -1,0 +1,5 @@
+websockets
+numpy
+ipython
+msgpack==1.0.0
+PyTurboJPEG

@@ -1,0 +1,2 @@
+include web/remoteImageVisualizer.html
+include web/remoteImageVisualizer.js
