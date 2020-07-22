@@ -16,13 +16,14 @@ class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 class basicwebserver:
     def __init__(self, host="0.0.0.0", port=8889):
         self.handler = MyHttpRequestHandler
+        self.htmlFilePath = '/tmp/index.html'
         self.host = host
         self.port = port
         self.server = None
         self.serving = False
+        self.createHTMLfile()
         self.start()
 
-        self.createHTMLfile()
 
     def createHTMLfile(self):
         try:
@@ -35,16 +36,19 @@ class basicwebserver:
             f = open(MyHttpRequestHandler.path, "r")
             hdata = f.read()
             f.close()
-            f = open("/tmp/index.html", "w")
+            f = open(self.htmlFilePath, "w")
             f.write(hdata)
             f.close()
-            MyHttpRequestHandler.path = '/tmp/index.html'
+            MyHttpRequestHandler.path = self.htmlFilePath
 
 
     def stop(self):
         self.server.shutdown()
         self.serverThread.join()
         print("Stopping web serving")
+        print("Removing page")
+        if (os.path.isfile(self.htmlFilePath)):
+            os.remove(self.htmlFilePath)
 
     def start(self):
         self.serverThread = threading.Thread(target=self.serve)
