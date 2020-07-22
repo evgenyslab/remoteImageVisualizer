@@ -17,6 +17,12 @@ class remoteimagevisualizer:
         self.uwserver = Server()  # need params here...
         self.uwserver.run()
 
+    def __del__(self):
+        self.webserver.stop()
+        self.uwserver.stop()
+
+    def stop(self):
+        self.webserver.stop()
 
     def show(self, img=None):
         """
