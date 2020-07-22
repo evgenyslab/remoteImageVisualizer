@@ -30,6 +30,7 @@ JPEG compression + image size + processing power will limit the maximum framerat
 - open image in new window (popup)
 - can manifest file be removed?
 - can html be auto generated in runtime?
+- UNBIND SOCKET FROM HTTP
 
 ## Example
 
