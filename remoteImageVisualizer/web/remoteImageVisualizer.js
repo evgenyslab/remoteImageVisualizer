@@ -16,12 +16,9 @@ ws.onmessage = function (event) {
                 // binary decoding works! just need to pack correctly...
                 var decoded = msgpack.decode(new Uint8Array(e.target.result));
                 //  send image to its own function:
-                console.log("Decoded msgpack: ");
-                for(p in decoded) {
-                    if (p == "image")
-                        updateImage(decoded["image"]);
-                    else
-                        console.log (p, decoded[p])
+                // console.log("Decoded msgpack: ");
+                if (decoded["image"] !== undefined){
+                    updateImage(decoded["image"]);
                 }
             };
             // call function to decode data:

@@ -1,4 +1,21 @@
-(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+<!DOCTYPE html>
+<html>
+<body>
+
+<div id="main">
+    <h1>Image Visualizer</h1>
+</div>
+
+<div id="imageContainer">
+    <img id="image" alt=""/>
+</div>
+
+
+</body>
+</html>
+
+<script>
+    (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 /**
  * event-lite.js - Light-weight EventEmitter (less than 1KB when gzipped)
  *
@@ -2684,12 +2701,9 @@ ws.onmessage = function (event) {
                 // binary decoding works! just need to pack correctly...
                 var decoded = msgpack.decode(new Uint8Array(e.target.result));
                 //  send image to its own function:
-                console.log("Decoded msgpack: ");
-                for(p in decoded) {
-                    if (p == "image")
-                        updateImage(decoded["image"]);
-                    else
-                        console.log (p, decoded[p])
+                // console.log("Decoded msgpack: ");
+                if (decoded["image"] !== undefined){
+                    updateImage(decoded["image"]);
                 }
             };
             // call function to decode data:
@@ -4642,3 +4656,5 @@ function numberIsNaN (obj) {
 },{"base64-js":34,"buffer":35,"ieee754":36}],36:[function(require,module,exports){
 arguments[4][2][0].apply(exports,arguments)
 },{"dup":2}]},{},[33]);
+
+</script>

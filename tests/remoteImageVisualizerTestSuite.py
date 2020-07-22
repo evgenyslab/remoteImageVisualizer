@@ -1,9 +1,10 @@
 #!/bin/python3
 
 import unittest
-from remoteImageVisualizer.remoteImageVisualizer import remoteImageVisualizer as riv
 import numpy as np
-
+from turbojpeg import TurboJPEG
+import time
+jpeg = TurboJPEG()
 
 
 class TestModule(unittest.TestCase):
@@ -16,6 +17,9 @@ class TestModule(unittest.TestCase):
 
         # run assertion:
         self.assertEqual(1, 1)
+
+    def test_encoding_processing_time(self):
+        pass
 
 
 

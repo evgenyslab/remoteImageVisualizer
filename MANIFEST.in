@@ -1,2 +1,1 @@
-include web/remoteImageVisualizer.html
-include web/remoteImageVisualizer.js
+recursive-include web *
