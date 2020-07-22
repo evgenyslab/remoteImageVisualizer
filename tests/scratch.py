@@ -5,7 +5,7 @@ from remoteimagevisualizer import remoteimagevisualizer
 
 vis = remoteimagevisualizer.remoteimagevisualizer()
 
-while True:
+for _ in range(100):
     image = ((np.random.rand(800,1200,3))*256).astype(np.uint8)
 
     vis.show(image)
