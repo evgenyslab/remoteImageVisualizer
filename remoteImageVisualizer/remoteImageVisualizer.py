@@ -1,8 +1,11 @@
 
 import msgpack
 import threading
+from turbojpeg import TurboJPEG
 from uWebSockets import Server
-from .websiteserver import websiteserver
+from .basicwebserver import basicwebserver
+
+jpeg = TurboJPEG()
 
 """
 Remote Image Visualizer Package
@@ -10,13 +13,11 @@ Remote Image Visualizer Package
 
 class remoteImageVisualizer:
     def __init__(self):
-        self.name = "pythonPackage"
         self.uwserver = Server()  # need params here...
+        self.webserver = basicwebserver()
 
-        # create thread for website server and run
+        # TODO create thread for website server and run
 
-    def doWork(self):
-        pass
 
 
     def show(self, img=None):
@@ -25,12 +26,18 @@ class remoteImageVisualizer:
         :param img: nxmxc numpy array of image
         :return:
         """
+        if not img:
+            return
 
         # check if website is being served:
-
-        # if not served, serve website
+        if not self.webserver.serving:
+            self.webserver.start()
 
         # check if Server is available
 
         # if everything is running, package image into jpeg + msgpack, server with server
-        pass
+        data = {
+            b"image": jpeg.encode(img),
+        }
+        packed = msgpack.packb(data)
+        self.uwserver.sendStringAsBinary(packed)

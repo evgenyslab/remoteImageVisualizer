@@ -13,6 +13,5 @@ setup(
     requires=[ 'numpy',
                 'PyTurboJPEG'
                 'msgpack',
-                'websockets',
                 'uWebSockets']
 )
