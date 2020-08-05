@@ -12,14 +12,6 @@ setup(
     keywords=[],
     classifiers=[],
     package_data={'': ['*.js', '*.html']},
-    # package_data={'remoteimagevisualizer/web': ['web/remoteImageVisualizer.html',
-    #                                             'web/remoteImageVisualizerBundle.js']},
-    # package_data={'remoteimagevisualizer': ['web/*']},
-    # data_files=[('web', ['web/remoteImageVisualizer.html', 'web/remoteImageVisualizerBundle.js'])],
     include_package_data=True,
-    # requires=[  'numpy',
-    #             'PyTurboJPEG',
-    #             'msgpack',
-    #             'uWebSockets',
-    #             'opencv']
+
 )
