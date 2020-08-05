@@ -6,6 +6,13 @@ import pkg_resources as p
 
 
 def generate_handler(html, scripts = None):
+    """
+    Generates an http.server.BaseHTTPRequestHandler that is triggered on webrequest
+
+    :param html: path to root html file
+    :param scripts: list of paths to scripts to add to page
+    :return:
+    """
     if scripts is None:
         scripts = []
     if isinstance(scripts, str):
@@ -30,7 +37,15 @@ def generate_handler(html, scripts = None):
     return MyHandler
 
 class basicwebserver:
+    """
+
+    """
     def __init__(self, host="0.0.0.0", port=8889):
+        """
+
+        :param host:
+        :param port:
+        """
         html = p.resource_filename('remoteimagevisualizer', 'web/index.html')
         script = p.resource_filename('remoteimagevisualizer', 'web/bundle.js')
         assert(os.path.isfile(html))
@@ -40,21 +55,34 @@ class basicwebserver:
         self.port = port
         self.server = None
         self.serving = False
+        self.serverThread = None
         self.start()
 
 
     def stop(self):
+        """
+
+        :return:
+        """
         self.server.shutdown()
         self.serverThread.join()
         print("Stopping web serving")
 
 
     def start(self):
+        """
+
+        :return:
+        """
         self.serverThread = threading.Thread(target=self.serve)
         self.serverThread.start()
         self.serving = True
 
     def serve(self):
+        """
+
+        :return:
+        """
         print("Starting web serving at: http://{:s}:{:d}\n\n".format(self.host,self.port))
         self.server = socketserver.TCPServer(("", self.port), self.handler, bind_and_activate=False)
         self.server.allow_reuse_address = True
