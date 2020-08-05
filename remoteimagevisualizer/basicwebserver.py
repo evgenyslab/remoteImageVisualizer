@@ -2,53 +2,52 @@ import http.server
 import socketserver
 import threading
 import os
-import pkg_resources
+import pkg_resources as p
 
-def generateLocalHtml():
 
-    pass
+def generate_handler(html, scripts = None):
+    if scripts is None:
+        scripts = []
+    if isinstance(scripts, str):
+        scripts = [scripts]
+    class MyHandler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            """Respond to a GET request."""
+            if self.path == '/':
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(open(html, "r").read().encode())
+                for script in scripts:
+                    print("loading script at: " + script)
+                    self.wfile.write("\n\n<script>".encode())
+                    self.wfile.write(open(script, "r").read().encode())
+                    self.wfile.write("\n\n</script>".encode())
 
-class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        return http.server.SimpleHTTPRequestHandler.do_GET(self)
+            else:
+                self.send_error(404)
 
+    return MyHandler
 
 class basicwebserver:
     def __init__(self, host="0.0.0.0", port=8889):
-        self.handler = MyHttpRequestHandler
-        self.htmlFilePath = '/tmp/index.html'
+        html = p.resource_filename('remoteimagevisualizer', 'web/index.html')
+        script = p.resource_filename('remoteimagevisualizer', 'web/bundle.js')
+        assert(os.path.isfile(html))
+        assert(os.path.isfile(script))
+        self.handler = generate_handler(html, scripts=[script])
         self.host = host
         self.port = port
         self.server = None
         self.serving = False
-        self.createHTMLfile()
         self.start()
-
-
-    def createHTMLfile(self):
-        try:
-            MyHttpRequestHandler.path = '../web/remoteImageVisualizer.html'
-            assert (os.path.isfile(MyHttpRequestHandler.path))
-        except AssertionError as E:
-            print('html file not found')
-            resource_package = __name__
-            MyHttpRequestHandler.path = pkg_resources.resource_filename(resource_package, 'web/remoteImageVisualizer.html')
-            f = open(MyHttpRequestHandler.path, "r")
-            hdata = f.read()
-            f.close()
-            f = open(self.htmlFilePath, "w")
-            f.write(hdata)
-            f.close()
-            MyHttpRequestHandler.path = self.htmlFilePath
 
 
     def stop(self):
         self.server.shutdown()
         self.serverThread.join()
         print("Stopping web serving")
-        print("Removing page")
-        if (os.path.isfile(self.htmlFilePath)):
-            os.remove(self.htmlFilePath)
+
 
     def start(self):
         self.serverThread = threading.Thread(target=self.serve)
