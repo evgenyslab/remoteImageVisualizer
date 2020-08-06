@@ -3,6 +3,7 @@ import msgpack
 from turbojpeg import TurboJPEG
 from uWebSockets import Server
 from .basicwebserver import basicwebserver
+from mpld3 import fig_to_html as fth
 import cv2
 
 jpeg = TurboJPEG()
@@ -12,9 +13,14 @@ Remote Image Visualizer Package
 """
 
 class remoteimagevisualizer:
-    def __init__(self):
-        self.webserver = basicwebserver()  # will start serving automatically
-        self.uwserver = Server()  # need params here...
+    def __init__(self, webport=8889, commport=8890):
+        """
+        Initialize remote visualizer
+        :param webport: Port for web hosting
+        :param commport: Port of websocket back-end communication
+        """
+        self.webserver = basicwebserver(port=webport, commport=commport)  # will start serving automatically
+        self.uwserver = Server(port=commport)  # need params here...
         self.uwserver.run()
 
     def __del__(self):
@@ -69,6 +75,16 @@ class remoteimagevisualizer:
                 # "height": img.shape[0]
             }
 
+            packed = msgpack.packb(data)
+            self.uwserver.sendStringAsBinary(packed)
+        except Exception as E:
+            print(E)
+
+    def showFig(self, fig=None):
+        try:
+            data = {
+                b"figure": fth(fig)
+            }
             packed = msgpack.packb(data)
             self.uwserver.sendStringAsBinary(packed)
         except Exception as E:

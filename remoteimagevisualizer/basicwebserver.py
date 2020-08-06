@@ -24,11 +24,11 @@ def generate_handler(html, scripts = None):
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
-                self.wfile.write(open(html, "r").read().encode())
+                self.wfile.write(html.encode())
                 for script in scripts:
                     print("loading script at: " + script)
                     self.wfile.write("\n\n<script>".encode())
-                    self.wfile.write(open(script, "r").read().encode())
+                    self.wfile.write(script.encode())
                     self.wfile.write("\n\n</script>".encode())
 
             else:
@@ -40,7 +40,7 @@ class basicwebserver:
     """
 
     """
-    def __init__(self, host="0.0.0.0", port=8889):
+    def __init__(self, host="0.0.0.0", port=8889, commport=8890):
         """
 
         :param host:
@@ -50,7 +50,10 @@ class basicwebserver:
         script = p.resource_filename('remoteimagevisualizer', 'web/bundle.js')
         assert(os.path.isfile(html))
         assert(os.path.isfile(script))
-        self.handler = generate_handler(html, scripts=[script])
+        self.html = open(html, "r").read()
+        self.script = open(script, "r").read()
+        self.script = self.script.replace("var wsport = \"8890\"", "var wsport = \"" + str(commport) + "\"")
+        self.handler = generate_handler(self.html, scripts=[self.script])
         self.host = host
         self.port = port
         self.server = None

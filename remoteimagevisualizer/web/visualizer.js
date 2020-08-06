@@ -1,6 +1,8 @@
 msgpack = require("msgpack-lite");
 
-var ws = new WebSocket("ws://0.0.0.0:8890");
+var wsport = "8890";
+
+var ws = new WebSocket("ws://0.0.0.0:" + wsport);
 
 console.log("Attempting connection");
 ws.onopen = ()=>{
