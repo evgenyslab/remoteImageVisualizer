@@ -39,10 +39,10 @@ JPEG compression + image size + processing power will limit the maximum framerat
 ```python
 import numpy as np
 import time
-from remoteimagevisualizer import remoteimagevisualizer
+from webplot import webplot
 
 # Create visualizer object:
-vis = remoteimagevisualizer.remoteimagevisualizer()
+vis = webplot.remoteimagevisualizer()
 
 # Create video-like stream of noisy image
 while True:

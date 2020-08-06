@@ -17,6 +17,7 @@ def generate_handler(html, scripts = None):
         scripts = []
     if isinstance(scripts, str):
         scripts = [scripts]
+
     class MyHandler(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
             """Respond to a GET request."""
@@ -35,7 +36,8 @@ def generate_handler(html, scripts = None):
 
     return MyHandler
 
-class basicwebserver:
+
+class webserver:
     """
 
     """
@@ -45,8 +47,8 @@ class basicwebserver:
         :param host:
         :param port:
         """
-        html = p.resource_filename('remoteimagevisualizer', 'web/index.html')
-        script = p.resource_filename('remoteimagevisualizer', 'web/bundle.js')
+        html = p.resource_filename('webplot', 'web/index.html')
+        script = p.resource_filename('webplot', 'web/bundle.js')
         assert(os.path.isfile(html))
         assert(os.path.isfile(script))
         self.html = open(html, "r").read()

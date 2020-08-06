@@ -2,7 +2,7 @@
 import msgpack
 from turbojpeg import TurboJPEG
 from uWebSockets import Server
-from .basicwebserver import basicwebserver
+from .webserver import webserver
 from mpld3 import fig_to_html as fth
 import cv2
 
@@ -12,14 +12,14 @@ jpeg = TurboJPEG()
 Remote Image Visualizer Package
 """
 
-class remoteimagevisualizer:
+class webplot:
     def __init__(self, webport=8889, commport=8890):
         """
         Initialize remote visualizer
         :param webport: Port for web hosting
         :param commport: Port of websocket back-end communication
         """
-        self.webserver = basicwebserver(port=webport, commport=commport)  # will start serving automatically
+        self.webserver = webserver(port=webport, commport=commport)  # will start serving automatically
         self.uwserver = Server(port=commport)  # need params here...
         self.uwserver.run()
 
