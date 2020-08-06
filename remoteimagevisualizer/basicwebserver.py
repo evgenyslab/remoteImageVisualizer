@@ -26,7 +26,6 @@ def generate_handler(html, scripts = None):
                 self.end_headers()
                 self.wfile.write(html.encode())
                 for script in scripts:
-                    print("loading script at: " + script)
                     self.wfile.write("\n\n<script>".encode())
                     self.wfile.write(script.encode())
                     self.wfile.write("\n\n</script>".encode())
