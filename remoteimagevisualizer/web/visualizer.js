@@ -1,6 +1,5 @@
 msgpack = require("msgpack-lite");
 
-
 var ws = new WebSocket("ws://0.0.0.0:8890");
 
 console.log("Attempting connection");
@@ -20,6 +19,9 @@ ws.onmessage = function (event) {
                 if (decoded["image"] !== undefined){
                     updateImage(decoded["image"]);
                 }
+                if (decoded["figure"] !== undefined){
+                    updateFigure(decoded["figure"]);
+                }
             };
             // call function to decode data:
             reader.readAsArrayBuffer(event.data);
@@ -32,4 +34,10 @@ updateImage = (data) =>{
     var blob = new Blob ([data]);
     // console.log(blob);
     document.querySelector("#image").src = URL.createObjectURL(blob);
+};
+
+updateFigure = (data) =>{
+  // inject html + script from mpld3
+    console.log(data);
+    document.getElementById("figureContainer").innerHTML = data;
 };

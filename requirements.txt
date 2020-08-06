@@ -3,3 +3,6 @@ ipython
 msgpack==1.0.0
 PyTurboJPEG
 opencv-python
+mpld3
+matplotlib
+cython 
