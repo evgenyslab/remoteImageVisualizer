@@ -82,11 +82,16 @@ class remoteimagevisualizer:
 
     def showFig(self, fig=None):
         try:
-            data = {
-                b"figure": fth(fig)
+            fhtml = fth(fig)
+            figHTMLcombined = fhtml.split("<script>")
+            figHTML = figHTMLcombined[0]
+            figJS = figHTMLcombined[1].replace("</script>", "")
+            dataFig = {
+                b'figure': True,
+                b'html': figHTML,
+                b'js': figJS
             }
-            packed = msgpack.packb(data)
-            self.uwserver.sendStringAsBinary(packed)
+            self.uwserver.sendStringAsBinary(msgpack.packb(dataFig))
         except Exception as E:
             print(E)
 
