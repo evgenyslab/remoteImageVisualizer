@@ -1,5 +1,6 @@
 .idea/*
 */node_modules/*
 webplot/web/node_modules/*
+webplot/web/.idea/*
 *egg-info/*
 */__pycache__/*

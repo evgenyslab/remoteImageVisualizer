@@ -4,9 +4,31 @@ var wsport = "8890";
 
 var ws = new WebSocket("ws://0.0.0.0:" + wsport);
 
+var connected = false;
+
+var imageLoaded = false;
+
+var canvas = document.getElementById('viewport');
+var context = canvas.getContext('2d');
+
+function getCursorPosition(canvas, event) {
+    if(imageLoaded) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        document.getElementById('mouseCoordinates').innerHTML = "x: " + x + " y: " + y;
+    }
+
+}
+
+canvas.addEventListener('mousemove', function(e) {
+    getCursorPosition(canvas, e)
+});
+
 console.log("Attempting connection");
 ws.onopen = ()=>{
-    console.log("Connected")
+    connected = true;
+    document.getElementById("header").innerHTML = 'Visualizer::Connected';
 };
 
 ws.onmessage = function (event) {
@@ -29,13 +51,34 @@ ws.onmessage = function (event) {
     reader.readAsArrayBuffer(event.data);
 };
 
+ws.onclose = () =>{
+    connected = false;
+    document.getElementById("header").innerHTML = 'Visualizer::Disconnected';
+};
+
+// register on mouse coordinates over canvas:
+
+
 updateImage = (data) =>{
-    // console.log("Made it here");
-    // console.log(typeof(data));
-    // console.log(data);
     var blob = new Blob ([data]);
-    // console.log(blob);
-    document.querySelector("#image").src = URL.createObjectURL(blob);
+
+    var img = new Image;
+    img.onload = function() { //this doesnt work when this is an arrow function...
+        console.log( 'image received, size: '+this.width+' '+ this.height );
+        // OLD: (will display full size)
+        // document.querySelector("#image").src = this.src;
+        // NEW WITH CANVAS: (will display canvas sized)
+        var canvas = document.getElementById('viewport');
+        var context = canvas.getContext('2d');
+        context.canvas.width = this.width;
+        context.canvas.height = this.height;
+        context.drawImage(img, 0, 0, this.width, this.height);
+        imageLoaded = true;
+        // todo: enable coordinate visualized
+    };
+    img.src = URL.createObjectURL(blob);
+
+
 };
 
 updateFigure = (data) =>{
