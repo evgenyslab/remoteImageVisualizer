@@ -6,18 +6,47 @@ var ws = new WebSocket("ws://0.0.0.0:" + wsport);
 
 var connected = false;
 
-var imageLoaded = false;
+
+var imageData = {
+    "width":0,
+    "height":0,
+    "loaded":false
+};
+
+// use Js to insert button, otherwise HTML won't link correctly (won't see the onclick defined here)
+var btn = document.createElement("BUTTON");   // Create a <button> element
+btn.innerHTML = "Clear Image";
+btn.onclick = clearImage;
+document.getElementById("imageContainer").appendChild(btn);
+
+
+var cvs = document.createElement("canvas");   // Create a <button> element
+cvs.id = "viewport";
+document.getElementById("imageContainer").appendChild(cvs);
+
+var mcoord = document.createElement("P");   // Create a <button> element
+mcoord.id = "mouseCoordinates";
+document.getElementById("imageContainer").appendChild(mcoord);
+
 
 var canvas = document.getElementById('viewport');
 var context = canvas.getContext('2d');
 
 function getCursorPosition(canvas, event) {
-    if(imageLoaded) {
+    if(imageData.loaded) {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
         document.getElementById('mouseCoordinates').innerHTML = "x: " + x + " y: " + y;
     }
+
+}
+
+function clearImage(){
+    var canvas = document.getElementById('viewport');
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('imageContainer').style.display = "none";
 
 }
 
@@ -65,16 +94,18 @@ updateImage = (data) =>{
     var img = new Image;
     img.onload = function() { //this doesnt work when this is an arrow function...
         console.log( 'image received, size: '+this.width+' '+ this.height );
+        document.getElementById('imageContainer').style.display = "block";
         // OLD: (will display full size)
         // document.querySelector("#image").src = this.src;
         // NEW WITH CANVAS: (will display canvas sized)
         var canvas = document.getElementById('viewport');
         var context = canvas.getContext('2d');
+        imageData.width = this.width;
+        imageData.height = this.height;
         context.canvas.width = this.width;
         context.canvas.height = this.height;
         context.drawImage(img, 0, 0, this.width, this.height);
-        imageLoaded = true;
-        // todo: enable coordinate visualized
+        imageData.loaded = true;
     };
     img.src = URL.createObjectURL(blob);
 
@@ -87,3 +118,6 @@ updateFigure = (data) =>{
     document.getElementById("figureContainer").innerHTML = data['html'];
     eval(data['js']);
 };
+
+// HIDE AFTER LOADING:
+document.getElementById('imageContainer').style.display = "none";
