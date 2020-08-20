@@ -5,6 +5,7 @@ from uWebSockets import Server
 from .basicwebserver import basicwebserver
 from mpld3 import fig_to_html as fth
 import cv2
+import numpy as np
 
 jpeg = TurboJPEG()
 
@@ -45,6 +46,12 @@ class remoteimagevisualizer:
         :return:
         """
         try:
+            if len(img.shape) == 2:
+                img = np.stack([img,img,img],axis=2)
+            elif len(img.shape) == 3 and img.shape[-1] == 1:
+                img = img.squeeze()
+                img = np.stack([img,img,img],axis=2)
+
             self.showAsJPEG(img, encoding=encoding)
 
         except Exception as E:
