@@ -1,6 +1,6 @@
 
 import msgpack
-from turbojpeg import TurboJPEG
+from turbojpeg import TurboJPEG, TJPF_BGR, TJCS_RGB
 from uWebSockets import Server
 from .basicwebserver import basicwebserver
 from mpld3 import fig_to_html as fth
@@ -27,31 +27,40 @@ class remoteimagevisualizer:
         self.webserver.stop()
         self.uwserver.stop()
 
+    def __getEncoding__(self, encodingString=""):
+        if encodingString.lower() == 'rgb':
+            return TJCS_RGB
+        elif encodingString.lower() == 'bgr':
+            return TJPF_BGR
+        else:
+            raise("Encoding format <{:s}> is invalid!".format(encodingString))
+
     def stop(self):
         self.webserver.stop()
 
-    def show(self, img=None):
+    def show(self, img=None, encoding="BGR"):
         """
 
         :param img: nxmxc numpy array of image
         :return:
         """
         try:
-            self.showAsJPEG(img)
+            self.showAsJPEG(img, encoding=encoding)
 
         except Exception as E:
             print(E)
 
-    def showAsJPEG(self, img=None, quality=85):
+    def showAsJPEG(self, img=None, encoding="BGR", quality=85):
         """
-
-                :param img: nxmxc numpy array of image
-                :return:
-                """
+        Turbo JPEG uses BGR by default
+        :param img: nxmxc numpy array of image
+        :return:
+        """
         try:
+            sourceEncoding = self.__getEncoding__(encoding)
             # if everything is running, package image into jpeg + msgpack, server with server
             data = {
-                b"image": jpeg.encode(img, quality=quality),
+                b"image": jpeg.encode(img, pixel_format=sourceEncoding, quality=quality),
                 # "width": img.shape[1],
                 # "height": img.shape[0]
             }
@@ -61,13 +70,17 @@ class remoteimagevisualizer:
         except Exception as E:
             print(E)
 
-    def showAsPNG(self, img=None, quality=1):
+    def showAsPNG(self, img=None, encoding="BGR", quality=1):
         """
 
         :param img: nxmxc numpy array of image
         :return:
         """
         try:
+            if encoding.lower() == "rgb":
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            elif encoding.lower() != "bgr":
+                raise("Encoding format <{:s}> is invalid!".format(encoding))
             # if everything is running, package image into jpeg + msgpack, server with server
             data = {
                 b"image": cv2.imencode('.png', img, [cv2.IMWRITE_PNG_COMPRESSION, quality])[1].tobytes(),
