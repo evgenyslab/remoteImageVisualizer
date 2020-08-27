@@ -1,6 +1,24 @@
-msgpack = require("msgpack-lite");
+/*
+TODO:
+- package page parameters into a dict
+- package page createElement calls into function, call 'build' function at the
+end of JS load
 
-var wsport = "8890";
+- add boarder to canvas
+
+- add special callback on canvas:
+  - if mouse down in bottom right corner (in coordinates), start resizing
+  at fixed aspect ratio
+  - stop resizing canvas on mouse up
+  - save resize %, use to display in coordinates
+
+- Auto resize canvas if image width > page width to be page width, save
+resize factor
+*/
+
+// msgpack = require("msgpack-lite");
+
+var wsport = "7777";
 
 var ws = new WebSocket("ws://0.0.0.0:" + wsport);
 
@@ -54,6 +72,20 @@ canvas.addEventListener('mousemove', function(e) {
     getCursorPosition(canvas, e)
 });
 
+var plot = document.getElementById('plotlyContainer')
+var enablePlotUpdate = true
+
+plot.addEventListener('mousedown', function(e) {
+    enablePlotUpdate = false
+    console.log("disabling plot updates")
+});
+
+plot.addEventListener('mouseup', function(e) {
+    enablePlotUpdate = true
+    console.log("enabling plot updates")
+});
+
+
 console.log("Attempting connection");
 ws.onopen = ()=>{
     connected = true;
@@ -74,6 +106,10 @@ ws.onmessage = function (event) {
         }
         if (decoded["figure"] !== undefined){
             updateFigure(decoded);
+        }
+        if (decoded["plotly"] !== undefined){
+            if (enablePlotUpdate)
+                updatePlotly(decoded);
         }
     };
     // call function to decode data:
@@ -118,6 +154,52 @@ updateFigure = (data) =>{
     document.getElementById("figureContainer").innerHTML = data['html'];
     eval(data['js']);
 };
+
+
+
+var plotlyData;
+var layout = {margin: {
+        l: 0,
+        r: 0,
+        b: 0,
+        t: 0
+    }};
+
+var plotlyOnce = false;
+
+updatePlotly = (data) =>{
+    // console.log(data)
+    // console.log('x:' + data['x'])
+    // console.log('y:' + data['y'])
+    // console.log('z:' + data['z'])
+    // data has data[
+    var trace1 = {
+        x:data['x'][0], y:data['y'][0], z:data['z'][0],
+        mode: 'markers',
+        marker: {
+            size: 12,
+            line: {
+                color: 'rgba(217, 217, 217, 0.14)',
+                width: 0.5},
+            opacity: 0.8},
+        type: 'scatter3d',
+        showscale: false
+    }
+    // console.log(trace1)
+    plotlyData = [trace1];
+
+    if (!plotlyOnce){
+        Plotly.newPlot(plot, [trace1], layout);
+        plotlyOnce = true;
+    }
+    else{
+        // No update available, and delete only works when theres more than 1!
+        Plotly.addTraces(plot, [trace1]);
+        Plotly.deleteTraces(plot, [0]);
+
+    }
+};
+
 
 // HIDE AFTER LOADING:
 document.getElementById('imageContainer').style.display = "none";

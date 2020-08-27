@@ -23,6 +23,8 @@
   "homepage": "https://github.com/evgenyslab/remoteImageVisualizer#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "msgpack-lite": "^0.1.26"
+    "msgpack-lite": "^0.1.26",
+    "plotly": "^1.0.6",
+    "plotly.js-dist": "^1.54.7"
   }
 }
