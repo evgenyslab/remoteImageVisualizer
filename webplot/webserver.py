@@ -51,6 +51,7 @@ class webserver:
         script = p.resource_filename('webplot', 'web/bundle.js')
         assert(os.path.isfile(html))
         assert(os.path.isfile(script))
+        # TODO: need to close these files after reading them
         self.html = open(html, "r").read()
         self.script = open(script, "r").read()
         self.script = self.script.replace("var wsport = \"8890\"", "var wsport = \"" + str(commport) + "\"")
