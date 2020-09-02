@@ -1,5 +1,15 @@
 /*
 TODO:
+
+- [ ] move all html generation into JS
+- [ ] create port input at top of page to set WS connection port
+- [ ] bind 'enter' key & button to port input box to attempt connection
+- [ ] add toolbar under WS connection bar with toggle switch/button for Image/Plot/MISC
+- [ ] add button to open new page
+- [ ] add image polygon parsing & plotting from msgpack
+- [ ] add ploltly directive for plot laytou
+- [ ] test orthogonal projection speed
+
 - package page parameters into a dict
 - package page createElement calls into function, call 'build' function at the
 end of JS load
@@ -50,12 +60,32 @@ function clearImage(){
 }
 
 function buildWebPage(){
+    // create divs
+    let divElement = document.createElement("div")
+    divElement.id = "main";
+
+    let divStatus = document.createElement("H1");
+    divStatus.id = "header";
+    let text = document.createTextNode("Visualizer::Disconnected");
+    divStatus.appendChild(text);
+    divElement.appendChild(divStatus);
+
+    document.getElementsByTagName("body")[0].appendChild(divElement);
+
+    // Image Container:
+    let divContainer = document.createElement("div");
+    divContainer.id = "imageContainer";
+    document.getElementsByTagName("body")[0].appendChild(divContainer);
+
+    divContainer = document.createElement("div");
+    divContainer.id = "figureContainer";
+    document.getElementsByTagName("body")[0].appendChild(divContainer);
+
     // use Js to insert button, otherwise HTML won't link correctly (won't see the onclick defined here)
     var btn = document.createElement("BUTTON");   // Create a <button> element
     btn.innerHTML = "Clear Image";
     btn.onclick = clearImage;
     document.getElementById("imageContainer").appendChild(btn);
-
 
     var cvs = document.createElement("canvas");   // Create a <button> element
     cvs.id = "viewport";
@@ -64,6 +94,9 @@ function buildWebPage(){
     var mcoord = document.createElement("P");   // Create a <button> element
     mcoord.id = "mouseCoordinates";
     document.getElementById("imageContainer").appendChild(mcoord);
+
+    // HIDE AFTER LOADING:
+    document.getElementById('imageContainer').style.display = "none";
 }
 
 // Main call function
@@ -79,7 +112,7 @@ function buildWebPage(){
         getCursorPosition(canvas, e)
     });
 
-    var plot = document.getElementById('plotlyContainer')
+    var plot = document.getElementById('figureContainer')
     var enablePlotUpdate = true
 
     plot.addEventListener('mousedown', function(e) {
@@ -229,8 +262,7 @@ function buildWebPage(){
     };
 
 
-// HIDE AFTER LOADING:
-    document.getElementById('imageContainer').style.display = "none";
+
 })();
 
 
