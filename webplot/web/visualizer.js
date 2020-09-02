@@ -30,14 +30,6 @@ resize factor
 
 // msgpack = require("msgpack-lite");
 
-
-
-var imageData = {
-    "width":0,
-    "height":0,
-    "loaded":false
-};
-
 let state = {
     pageSettings:{
         tabs:["image","plot","misc"],
@@ -85,7 +77,7 @@ function setPageToOther(){
 }
 
 function getCursorPosition(canvas, event) {
-    if(imageData.loaded) {
+    if(state.imageData.loaded) {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
@@ -144,6 +136,7 @@ function registerWDCallbacks(){
     };
 }
 
+
 /*
 
 <div main>
@@ -179,8 +172,7 @@ function buildHeader(){
 
     let divHeaderButtonToolBar = document.createElement("div")
     divHeaderButtonToolBar.id = "headerButtonToolBar";
-
-    buttonStyle=
+    let buttonStyle =
     "    background-color: #4CAF50;" +
     "    border: none;" +
     "    color: white;" +
@@ -191,9 +183,10 @@ function buildHeader(){
     "    margin: 4px 2px;" +
     "    cursor: pointer;";
 
+    let btn = null;
     // Auto create buttons:
     state.pageSettings.tabButtons.forEach((buttonSpec)=>{
-        var btn = document.createElement("BUTTON");   // Create a <button> element
+        btn = document.createElement("BUTTON");   // Create a <button> element
         btn.innerHTML = buttonSpec.name
         // btn.onclick = clearImage;
         btn.onclick = buttonSpec.fx;
@@ -201,10 +194,45 @@ function buildHeader(){
         divHeaderButtonToolBar.appendChild(btn);
     })
 
+    // add connection info:
+    divHeaderButtonToolBar.append("\tPORT::");
+    let portInput = document.createElement("INPUT");
+    portInput.id = "portConnectionInfo"
+    portInput.type="text";
+    portInput.size = 5;
+    portInput.value = state.wsData.port
+    portInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            state.wsData.port = document.getElementById("portConnectionInfo").value
+            tryToConnectToWS()
+            registerWDCallbacks()
+        }
+    });
+    divHeaderButtonToolBar.appendChild(portInput);
 
-    let spacer = document.createElement("br")
+    btn = document.createElement("BUTTON");   // Create a <button> element
+    btn.innerHTML = "Connect"
+    btn.addEventListener('click', function () {
+        if (!state.wsData.connected){
+            state.wsData.port = document.getElementById("portConnectionInfo").value
+            tryToConnectToWS()
+            registerWDCallbacks()
+        }
+    });
+    btn.style.cssText = buttonStyle
+    divHeaderButtonToolBar.appendChild(btn);
 
-    divHeaderButtonToolBar.appendChild(spacer);
+    btn = document.createElement("BUTTON");   // Create a <button> element
+    btn.innerHTML = "Disconnect"
+    btn.addEventListener('click', function () {
+        console.log("disconnecting")
+        state.wsData.ws.close()
+    });
+    btn.style.cssText = buttonStyle
+    divHeaderButtonToolBar.appendChild(btn);
+
+    let spacer = document.createElement("P")
+
     divHeaderButtonToolBar.appendChild(spacer);
 
     divMain.appendChild(divHeader)
@@ -313,12 +341,12 @@ function buildWebPage(){
             // NEW WITH CANVAS: (will display canvas sized)
             var canvas = document.getElementById('viewport');
             var context = canvas.getContext('2d');
-            imageData.width = this.width;
-            imageData.height = this.height;
+            state.imageData.width = this.width;
+            state.imageData.height = this.height;
             context.canvas.width = this.width;
             context.canvas.height = this.height;
             context.drawImage(img, 0, 0, this.width, this.height);
-            imageData.loaded = true;
+            state.imageData.loaded = true;
         };
         img.src = URL.createObjectURL(blob);
 
