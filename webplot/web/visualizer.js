@@ -31,25 +31,6 @@ var imageData = {
     "loaded":false
 };
 
-// use Js to insert button, otherwise HTML won't link correctly (won't see the onclick defined here)
-var btn = document.createElement("BUTTON");   // Create a <button> element
-btn.innerHTML = "Clear Image";
-btn.onclick = clearImage;
-document.getElementById("imageContainer").appendChild(btn);
-
-
-var cvs = document.createElement("canvas");   // Create a <button> element
-cvs.id = "viewport";
-document.getElementById("imageContainer").appendChild(cvs);
-
-var mcoord = document.createElement("P");   // Create a <button> element
-mcoord.id = "mouseCoordinates";
-document.getElementById("imageContainer").appendChild(mcoord);
-
-
-var canvas = document.getElementById('viewport');
-var context = canvas.getContext('2d');
-
 function getCursorPosition(canvas, event) {
     if(imageData.loaded) {
         const rect = canvas.getBoundingClientRect();
@@ -68,138 +49,188 @@ function clearImage(){
 
 }
 
-canvas.addEventListener('mousemove', function(e) {
-    getCursorPosition(canvas, e)
-});
-
-var plot = document.getElementById('plotlyContainer')
-var enablePlotUpdate = true
-
-plot.addEventListener('mousedown', function(e) {
-    enablePlotUpdate = false
-    console.log("disabling plot updates")
-});
-
-plot.addEventListener('mouseup', function(e) {
-    enablePlotUpdate = true
-    console.log("enabling plot updates")
-});
+function buildWebPage(){
+    // use Js to insert button, otherwise HTML won't link correctly (won't see the onclick defined here)
+    var btn = document.createElement("BUTTON");   // Create a <button> element
+    btn.innerHTML = "Clear Image";
+    btn.onclick = clearImage;
+    document.getElementById("imageContainer").appendChild(btn);
 
 
-console.log("Attempting connection");
-ws.onopen = ()=>{
-    connected = true;
-    document.getElementById("header").innerHTML = 'Visualizer::Connected';
-};
+    var cvs = document.createElement("canvas");   // Create a <button> element
+    cvs.id = "viewport";
+    document.getElementById("imageContainer").appendChild(cvs);
 
-ws.onmessage = function (event) {
-    var reader = new FileReader();
-    // arrow function to retain 'this' & handle byte array conversion + pass to decoder:
-    reader.onload = (e) =>{
-        // buffer = new Uint8Array(e.target.result);  // <-- OLD!
-        // binary decoding works! just need to pack correctly...
-        var decoded = msgpack.decode(new Uint8Array(e.target.result));
-        //  send image to its own function:
-        // console.log("Decoded msgpack: ");
-        if (decoded["image"] !== undefined){
-            updateImage(decoded["image"]);
-        }
-        if (decoded["figure"] !== undefined){
-            updateFigure(decoded);
-        }
-        if (decoded["plotly"] !== undefined){
-            if (enablePlotUpdate)
-                updatePlotly(decoded);
-        }
+    var mcoord = document.createElement("P");   // Create a <button> element
+    mcoord.id = "mouseCoordinates";
+    document.getElementById("imageContainer").appendChild(mcoord);
+}
+
+// Main call function
+(function() {
+
+    buildWebPage()
+    var canvas = document.getElementById('viewport');
+    var context = canvas.getContext('2d');
+
+
+
+    canvas.addEventListener('mousemove', function(e) {
+        getCursorPosition(canvas, e)
+    });
+
+    var plot = document.getElementById('plotlyContainer')
+    var enablePlotUpdate = true
+
+    plot.addEventListener('mousedown', function(e) {
+        enablePlotUpdate = false
+        console.log("disabling plot updates")
+    });
+
+    plot.addEventListener('mouseup', function(e) {
+        enablePlotUpdate = true
+        console.log("enabling plot updates")
+    });
+
+
+    console.log("Attempting connection");
+    ws.onopen = ()=>{
+        connected = true;
+        document.getElementById("header").innerHTML = 'Visualizer::Connected';
     };
-    // call function to decode data:
-    reader.readAsArrayBuffer(event.data);
-};
 
-ws.onclose = () =>{
-    connected = false;
-    document.getElementById("header").innerHTML = 'Visualizer::Disconnected';
-};
+    ws.onmessage = function (event) {
+        var reader = new FileReader();
+        // arrow function to retain 'this' & handle byte array conversion + pass to decoder:
+        reader.onload = (e) =>{
+            // buffer = new Uint8Array(e.target.result);  // <-- OLD!
+            // binary decoding works! just need to pack correctly...
+            var decoded = msgpack.decode(new Uint8Array(e.target.result));
+            //  send image to its own function:
+            // console.log("Decoded msgpack: ");
+            if (decoded["image"] !== undefined){
+                updateImage(decoded["image"]);
+            }
+            if (decoded["figure"] !== undefined){
+                updateFigure(decoded);
+            }
+            if (decoded["plotly"] !== undefined){
+                if (enablePlotUpdate) {
+                    // console.time('updatePlotly')
+                    updatePlotly(decoded);
+                    // console.timeEnd('updatePlotly')
+                }
+            }
+        };
+        // call function to decode data:
+        reader.readAsArrayBuffer(event.data);
+    };
+
+    ws.onclose = () =>{
+        connected = false;
+        document.getElementById("header").innerHTML = 'Visualizer::Disconnected';
+    };
 
 // register on mouse coordinates over canvas:
 
 
-updateImage = (data) =>{
-    var blob = new Blob ([data]);
+    updateImage = (data) =>{
+        var blob = new Blob ([data]);
 
-    var img = new Image;
-    img.onload = function() { //this doesnt work when this is an arrow function...
-        console.log( 'image received, size: '+this.width+' '+ this.height );
-        document.getElementById('imageContainer').style.display = "block";
-        // OLD: (will display full size)
-        // document.querySelector("#image").src = this.src;
-        // NEW WITH CANVAS: (will display canvas sized)
-        var canvas = document.getElementById('viewport');
-        var context = canvas.getContext('2d');
-        imageData.width = this.width;
-        imageData.height = this.height;
-        context.canvas.width = this.width;
-        context.canvas.height = this.height;
-        context.drawImage(img, 0, 0, this.width, this.height);
-        imageData.loaded = true;
+        var img = new Image;
+        img.onload = function() { //this doesnt work when this is an arrow function...
+            console.log( 'image received, size: '+this.width+' '+ this.height );
+            document.getElementById('imageContainer').style.display = "block";
+            // OLD: (will display full size)
+            // document.querySelector("#image").src = this.src;
+            // NEW WITH CANVAS: (will display canvas sized)
+            var canvas = document.getElementById('viewport');
+            var context = canvas.getContext('2d');
+            imageData.width = this.width;
+            imageData.height = this.height;
+            context.canvas.width = this.width;
+            context.canvas.height = this.height;
+            context.drawImage(img, 0, 0, this.width, this.height);
+            imageData.loaded = true;
+        };
+        img.src = URL.createObjectURL(blob);
+
+
     };
-    img.src = URL.createObjectURL(blob);
 
-
-};
-
-updateFigure = (data) =>{
-    // inject html + script from mpld3
-    // expects dict with 'html', and 'js' fields
-    document.getElementById("figureContainer").innerHTML = data['html'];
-    eval(data['js']);
-};
+    updateFigure = (data) =>{
+        // inject html + script from mpld3
+        // expects dict with 'html', and 'js' fields
+        document.getElementById("figureContainer").innerHTML = data['html'];
+        eval(data['js']);
+    };
 
 
 
-var plotlyData;
-var layout = {margin: {
-        l: 0,
-        r: 0,
-        b: 0,
-        t: 0
-    }};
+    var plotlyData;
+    var layout = {
+        scene:{
+            xaxis:{range: [0, 1]},
+            yaxis:{range: [0, 1]},
+            zaxis:{range: [0, 1]},
+            aspectmode:'manual',
+            aspectratio:{
+                x:1,
+                y:1,
+                z:1,
+            }
 
-var plotlyOnce = false;
+        },
+        // TODO: link height to page
+        height: 600,
+        margin: {
+            l: 0,
+            r: 0,
+            b: 0,
+            t: 0
+        },
+    };
 
-updatePlotly = (data) =>{
-    // console.log(data)
-    // console.log('x:' + data['x'])
-    // console.log('y:' + data['y'])
-    // console.log('z:' + data['z'])
-    // data has data[
-    var trace1 = {
-        x:data['x'][0], y:data['y'][0], z:data['z'][0],
-        mode: 'markers',
-        marker: {
-            size: 12,
-            line: {
-                color: 'rgba(217, 217, 217, 0.14)',
-                width: 0.5},
-            opacity: 0.8},
-        type: 'scatter3d',
-        showscale: false
-    }
-    // console.log(trace1)
-    plotlyData = [trace1];
+    var plotlyOnce = false;
 
-    if (!plotlyOnce){
-        Plotly.newPlot(plot, [trace1], layout);
-        plotlyOnce = true;
-    }
-    else{
-        // No update available, and delete only works when theres more than 1!
-        Plotly.addTraces(plot, [trace1]);
-        Plotly.deleteTraces(plot, [0]);
+    updatePlotlyEmpty = (data) => {};
 
-    }
-};
+    updatePlotly = (data) =>{
+        console.log(data)
+        // use this to decode byte array to string:
+        // console.log(decodeURIComponent(escape(data['config']['mode'])))
+        var trace1 = {
+            // INPUT DATA MUST BE FLAT!
+            x:data['x'], y:data['y'], z:data['z'],
+            mode: 'markers',
+            marker: {
+                size: 1,
+                // line: {
+                //     color: 'rgba(217, 217, 217, 0.14)',
+                //     width: 0.5},
+                opacity: 1},
+            type: 'scatter3d',
+            showscale: false
+        }
+        // console.log(trace1)
+        plotlyData = [trace1];
+
+        if (!plotlyOnce){
+            Plotly.newPlot(plot, [trace1], layout);
+            plotlyOnce = true;
+        }
+        else{
+            // No update available, and delete only works when theres more than 1!
+            Plotly.addTraces(plot, [trace1]);
+            Plotly.deleteTraces(plot, [0]);
+            // Plotly.relayout(plot, layout)
+
+        }
+    };
 
 
 // HIDE AFTER LOADING:
-document.getElementById('imageContainer').style.display = "none";
+    document.getElementById('imageContainer').style.display = "none";
+})();
+
+
