@@ -160,3 +160,24 @@ dataFigureAndConfig = {
 }
 wp.plot(dataFigureAndConfig)
 ```
+
+### Displaying Raw HTML
+
+```
+import numpy as np
+import time
+from webplot import webplot
+
+# Create visualizer object:
+wp = webplot()
+
+npts = 500
+# create plotly data object:
+dataHtml= {
+    'other': {
+        'html': '<P><h1>MY RAW HTML GOES IN HERE</h1> </p'
+    }
+}
+# plot it:
+wp.plot(dataHtml)
+```
