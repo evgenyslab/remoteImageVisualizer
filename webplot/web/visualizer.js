@@ -1,5 +1,5 @@
 /*
-TODO:
+TODO: MASSIVELY CLEANUP NOMENCLARURE!
 
 - [x] move all html generation into JS
 - [ ] test ws.message send back
@@ -11,7 +11,7 @@ TODO:
 - [ ] add image polygon parsing & plotting from msgpack
 - [x] add ploltly directive for plot laytou
 - [ ] test orthogonal projection speed
-- [ ] redraw last received image -> how to actaully store image locally?
+- [~] redraw last received image -> how to actaully store image locally? (somehow it works..)
 - [x] plotly dict parser intengration
 - [x] basic plotly integration
 - [x] AUTO RESIZE PLOT
@@ -100,7 +100,7 @@ let state = {
         tabContainers:
             ["imageContainer",
             "figureContainer",
-            // "otherContainer",
+            "miscContainer",
             ],
 
     },
@@ -228,6 +228,7 @@ function hideAllContainers(){
     })
 }
 
+
 function resetPageButtons(){
     state.pageSettings.tabButtons.forEach((buttonSpec)=>{
         let btn = document.getElementById(buttonSpec.id)
@@ -252,6 +253,7 @@ function setPageToImage(){
     state.pageState.currentView = "Image";
     document.getElementById('figureContainer').style.display = "none";
     document.getElementById('imageContainer').style.display = "block";
+    document.getElementById('miscContainer').style.display = "none";
     togglePageSelectButtons(state.pageState.currentView)
     // resetPageButtons()
     // let btn = document.getElementById("enableImageView")
@@ -263,8 +265,9 @@ function setPageToImage(){
 function setPageToPlot(){
     console.log("setPageToPlot")
     state.pageState.currentView = "Plot";
-    document.getElementById('imageContainer').style.display = "none";
     document.getElementById('figureContainer').style.display = "block";
+    document.getElementById('imageContainer').style.display = "none";
+    document.getElementById('miscContainer').style.display = "none";
     togglePageSelectButtons(state.pageState.currentView)
     // resetPageButtons()
     // let btn = document.getElementById("enablePlotView")
@@ -272,6 +275,11 @@ function setPageToPlot(){
 }
 function setPageToOther(){
     console.log("setPageToOther")
+    state.pageState.currentView = "Other";
+    document.getElementById('figureContainer').style.display = "none";
+    document.getElementById('imageContainer').style.display = "none";
+    document.getElementById('miscContainer').style.display = "block";
+    togglePageSelectButtons(state.pageState.currentView)
 }
 
 function getCursorPosition(canvas, event) {
@@ -303,7 +311,7 @@ function tryToConnectToWS(){
     state.wsData.ws = new WebSocket("ws://0.0.0.0:" + state.wsData.port);
 }
 
-function registerWDCallbacks(){
+function registerWebSocketCallbacks(){
     state.wsData.ws.onopen = ()=>{
         state.wsData.connected = true;
         document.getElementById("header").innerHTML = 'Visualizer::Connected';
@@ -329,6 +337,10 @@ function registerWDCallbacks(){
             if (decoded["figureConfiguration"] !== undefined){
                 if (state.pageState.currentView==="Plot")
                     updateFigureConfiguration(decoded['figureConfiguration']);
+            }
+            if (decoded["other"] !== undefined){
+                if ((state.pageState.currentView==="Other")  || (state.pageState.currentView===null))
+                    updateMiscDataPage(decoded["other"]);
             }
         };
         // call function to decode data:
@@ -485,6 +497,12 @@ updateFigureConfiguration = (data) =>{
     Plotly.relayout(plot, data)
 }
 
+updateMiscDataPage = (data) =>{
+    if (state.pageState.currentView===null)
+        changeStateFromNoneToFirst("Other")
+    let div = document.getElementById("miscCanvasContainer")
+    div.innerHTML = data['html']
+}
 
 /*
 
@@ -546,7 +564,7 @@ function buildHeader(){
         if (e.key === 'Enter') {
             state.wsData.port = document.getElementById("portConnectionInfo").value
             tryToConnectToWS()
-            registerWDCallbacks()
+            registerWebSocketCallbacks()
         }
     });
     divHeaderButtonToolBar.appendChild(portInput);
@@ -557,7 +575,7 @@ function buildHeader(){
         if (!state.wsData.connected){
             state.wsData.port = document.getElementById("portConnectionInfo").value
             tryToConnectToWS()
-            registerWDCallbacks()
+            registerWebSocketCallbacks()
         }
     });
     btn.style.cssText = connectButtonStyle
@@ -664,7 +682,22 @@ function buildFigureContainer(){
 }
 //TODO
 function buildMiscContainer(){
+    let divMiscContainer = document.createElement("div")
+    divMiscContainer.id = "miscContainer";
 
+    let divButtonToolBar = document.createElement("div")
+    divButtonToolBar.id = "miscButtonToolBar";
+
+    let divCanvasContainer = document.createElement("div")
+    divCanvasContainer.id = "miscCanvasContainer";
+
+    let divInformationBar = document.createElement("div")
+    divInformationBar.id = "miscInformationBar";
+
+    divMiscContainer.appendChild(divButtonToolBar)
+    divMiscContainer.appendChild(divCanvasContainer)
+    divMiscContainer.appendChild(divInformationBar)
+    document.getElementsByTagName("body")[0].appendChild(divMiscContainer);
 }
 
 function buildWebPage(){
@@ -684,7 +717,7 @@ function buildWebPage(){
     initializePlotlyLayout();
     // create ws connection:
     tryToConnectToWS();
-    registerWDCallbacks();
+    registerWebSocketCallbacks();
 
 
 })();
