@@ -1,10 +1,9 @@
 
 import msgpack
-from turbojpeg import TurboJPEG
+from turbojpeg import TurboJPEG, TJPF_BGR, TJCS_RGB
 from uWebSockets import Server
-from .webserver import webserver
-from mpld3 import fig_to_html as fth
-import cv2
+from webplot.webserver import webserver
+import numpy as np
 
 jpeg = TurboJPEG()
 
@@ -27,32 +26,50 @@ class webplot:
         self.webserver.stop()
         self.uwserver.stop()
 
+    def __getEncoding__(self, encodingString=""):
+        if encodingString.lower() == 'rgb':
+            return TJCS_RGB
+        elif encodingString.lower() == 'bgr':
+            return TJPF_BGR
+        else:
+            raise("Encoding format <{:s}> is invalid!".format(encodingString))
+
     def stop(self):
         self.webserver.stop()
 
-    def show(self, img=None):
-        """
+    def show(self, img=None, encoding="RGB"):
+        """!
 
-        :param img: nxmxc numpy array of image
-        :return:
+        @param np.array img: nxmxc numpy array of image
+        @param string encoding: encoding string
+        @return:
         """
         try:
-            self.showAsJPEG(img)
+            if len(img.shape) == 2:
+                img = np.stack([img, img, img], axis=2)
+            elif len(img.shape) == 3 and img.shape[-1] == 1:
+                img = img.squeeze()
+                img = np.stack([img, img, img], axis=2)
+
+            self.showAsJPEG(img, encoding)
 
         except Exception as E:
             print(E)
 
-    def showAsJPEG(self, img=None, quality=85):
+    def showAsJPEG(self, img=None, encoding="RGB", quality=85):
         """!
         Note: turbo jpeg default requires BGR Image!
 
-        @param img: nxmxc numpy array of image
+        @param np.array img: nxmxc numpy array of image
+        @param string encoding: encoding string
+        @param quality: compression quality
         @return:
         """
         try:
+            sourceEncoding = self.__getEncoding__(encoding)
             # if everything is running, package image into jpeg + msgpack, server with server
             data = {
-                "image": jpeg.encode(img, quality=quality),
+                "image": jpeg.encode(img,pixel_format=sourceEncoding, quality=quality),
             }
 
             packed = msgpack.packb(data)

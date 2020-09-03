@@ -14,6 +14,8 @@ TODO:
 - [ ] redraw last received image -> how to actaully store image locally?
 - [x] plotly dict parser intengration
 - [x] basic plotly integration
+- [x] AUTO RESIZE PLOT
+- [ ] NOTIFICATION THAT DATA WAS RECEIVED AT TOP!
 
 - [ ] __FUTURE__ auto build with json object
 - [ ] __FUTURE__ Auto create multiple graphs/images based on ID, up to max
@@ -151,7 +153,7 @@ function registerImageOnLoad(){
             (prevCanvasHeightAvailable !== state.imageData.canvasHeightAvailable) ||
             (prevImageWidth !== state.imageData.width) ||
             (prevImageHeight !== state.imageData.height))
-            configureCanvas()
+            configureImageCanvas()
         context.drawImage(state.imageData.image, 0, 0,  state.imageData.canvasWidth,
             state.imageData.canvasHeight);
         state.imageData.loaded = true;
@@ -174,6 +176,7 @@ function initializePlotlyLayout(){
             }
         },
         height: state.pageState.canvasHeightAvailable*(0.7),
+        width: state.pageState.canvasWidthAvailable,
         margin: {
             l: 0,
             r: 0,
@@ -283,7 +286,7 @@ function registerWDCallbacks(){
 }
 
 function registerResizingCallbacks(){
-  window.addEventListener('resize', updateImageOnResize)
+  window.addEventListener('resize', updateCanvasOnResize)
 }
 
 function updateCanvasDimensionsAvailable(){
@@ -304,7 +307,7 @@ function updateCanvasDimensionsAvailable(){
     state.pageState.canvasHeightAvailable = window.innerHeight - elemRect.y - 20;
 }
 
-function configureCanvas(){
+function configureImageCanvas(){
     var canvas = document.getElementById('imageCanvasContainer');
     var context = canvas.getContext('2d');
     // find scaling:
@@ -341,11 +344,18 @@ function redrawImage(){
         state.imageData.canvasHeight);
 }
 
-function updateImageOnResize(){
+function updateCanvasOnResize(){
     if ((state.pageState.currentView==="Image") && (state.imageData.loaded)){
         updateCanvasDimensionsAvailable()
-        configureCanvas()
+        configureImageCanvas()
         redrawImage()
+    }else if ((state.pageState.currentView==="Plot") && (state.plotData.hasPlotted)){
+        updateCanvasDimensionsAvailable()
+        let layout = {
+            height: state.pageState.canvasHeightAvailable*(0.7),
+            width: state.pageState.canvasWidthAvailable,
+        }
+        updateFigureConfiguration(layout)
     }
 }
 
