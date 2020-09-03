@@ -4,6 +4,7 @@ from turbojpeg import TurboJPEG, TJPF_BGR, TJCS_RGB
 from uWebSockets import Server
 from webplot.webserver import webserver
 import numpy as np
+import warnings
 
 jpeg = TurboJPEG()
 
@@ -33,6 +34,32 @@ class webplot:
             return TJPF_BGR
         else:
             raise("Encoding format <{:s}> is invalid!".format(encodingString))
+
+    def __tryToDecodeMessage__(self, message):
+        """
+        strings will have signature `b'string'`
+        lists of strings will have signature `b'string,string'` -> indistinguishable from string
+        msgpack object will have signature `b'\\x....\...'
+        dict object will have signature `b'[object Object]'
+        """
+        # try to decode string, or dict or list...
+        decodedData = []
+        try:
+            decodedData = msgpack.unpackb(message)
+        except Exception as e:
+            try:
+                decodedData = message.decode('UTF-8')
+            except Exception as e:
+                warnings.warn("Could not decode returned message as string")
+        return decodedData
+
+    def getMessages(self):
+        # TODO: how to make this a call back that actives when uwserver.readNonBlocking() is not null?
+        # maybe need to put callback in uwserver; maybe asyncio
+        message = self.uwserver.readNonBlocking()
+        if len(message) > 0:
+            return self.__tryToDecodeMessage__(message)
+        return []
 
     def stop(self):
         self.webserver.stop()
@@ -69,14 +96,13 @@ class webplot:
             sourceEncoding = self.__getEncoding__(encoding)
             # if everything is running, package image into jpeg + msgpack, server with server
             data = {
-                "image": jpeg.encode(img,pixel_format=sourceEncoding, quality=quality),
+                "image": jpeg.encode(img, pixel_format=sourceEncoding, quality=quality),
             }
 
             packed = msgpack.packb(data)
             self.uwserver.sendStringAsBinary(packed)
         except Exception as E:
             print(E)
-
 
     def plot(self, fig=None):
         """!

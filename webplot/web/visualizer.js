@@ -16,6 +16,7 @@ TODO:
 - [x] basic plotly integration
 - [x] AUTO RESIZE PLOT
 - [ ] NOTIFICATION THAT DATA WAS RECEIVED AT TOP!
+- [x] Auto Toggel to first data type received
 
 - [ ] __FUTURE__ auto build with json object
 - [ ] __FUTURE__ Auto create multiple graphs/images based on ID, up to max
@@ -104,7 +105,7 @@ let state = {
 
     },
     pageState:{
-        currentView:"Image",
+        currentView:null,
         enablePlotUpdate:true,
         canvasWidthAvailable:0,
         canvasHeightAvailable:0,
@@ -234,15 +235,27 @@ function resetPageButtons(){
     })
 }
 
+function togglePageSelectButtons(page){
+    resetPageButtons()
+    state.pageSettings.tabButtons.forEach((data)=>{
+        if (data.name===page) {
+            let btn = document.getElementById(data.id);
+            btn.style.backgroundColor = "GREEN";
+        }
+    })
+
+}
+
 function setPageToImage(){
     // TODO: reload image if one exists!
     console.log("setPageToImage")
     state.pageState.currentView = "Image";
     document.getElementById('figureContainer').style.display = "none";
     document.getElementById('imageContainer').style.display = "block";
-    resetPageButtons()
-    let btn = document.getElementById("enableImageView")
-    btn.style.backgroundColor = "GREEN"
+    togglePageSelectButtons(state.pageState.currentView)
+    // resetPageButtons()
+    // let btn = document.getElementById("enableImageView")
+    // btn.style.backgroundColor = "GREEN"
     // try to redraw last image:
     // updateImageOnResize()
 }
@@ -252,9 +265,10 @@ function setPageToPlot(){
     state.pageState.currentView = "Plot";
     document.getElementById('imageContainer').style.display = "none";
     document.getElementById('figureContainer').style.display = "block";
-    resetPageButtons()
-    let btn = document.getElementById("enablePlotView")
-    btn.style.backgroundColor = "GREEN"
+    togglePageSelectButtons(state.pageState.currentView)
+    // resetPageButtons()
+    // let btn = document.getElementById("enablePlotView")
+    // btn.style.backgroundColor = "GREEN"
 }
 function setPageToOther(){
     console.log("setPageToOther")
@@ -305,11 +319,11 @@ function registerWDCallbacks(){
             //  send image to its own function:
             // console.log("Decoded msgpack: ");
             if (decoded["image"] !== undefined){
-                if (state.pageState.currentView==="Image")
+                if ((state.pageState.currentView==="Image") || (state.pageState.currentView===null))
                     updateImage(decoded["image"]);
             }
             if (decoded["figure"] !== undefined){
-                if (state.pageState.currentView==="Plot")
+                if ((state.pageState.currentView==="Plot")  || (state.pageState.currentView===null))
                     updateFigure(decoded['figure']);
             }
             if (decoded["figureConfiguration"] !== undefined){
@@ -337,10 +351,14 @@ function updateCanvasDimensionsAvailable(){
     // visible width:
     let w = body.offsetWidth
     // visible height:
+    let canvas = null
     if (state.pageState.currentView==="Image")
-        var canvas = document.getElementById('imageCanvasContainer');
+        canvas = document.getElementById('imageCanvasContainer');
     else if (state.pageState.currentView==="Plot")
-        var canvas = document.getElementById('figureCanvasContainer');
+        canvas = document.getElementById('figureCanvasContainer');
+    else
+        canvas = document.getElementById('imageCanvasContainer');
+
     let elemRect = canvas.getBoundingClientRect()
     // what to do if no image loaded yet?
     state.imageData.canvasWidthAvailable = w-20;
@@ -402,7 +420,17 @@ function updateCanvasOnResize(){
     }
 }
 
+function changeStateFromNoneToFirst(message){
+    state.pageSettings.tabButtons.forEach((data)=>{
+        if (data.name===message) {
+            data.fx()
+        }
+    })
+}
+
 updateImage = (data) =>{
+    if (state.pageState.currentView===null)
+        changeStateFromNoneToFirst("Image")
     let blob = new Blob ([data]);
     state.imageData.image.src = URL.createObjectURL(blob);
 
@@ -436,6 +464,8 @@ function updateCanvasSize(){
 }
 
 updateFigure = (data) =>{
+    if (state.pageState.currentView===null)
+        changeStateFromNoneToFirst("Plot")
     let plot = document.getElementById('figureCanvasContainer')
     console.log(data)
 
@@ -582,7 +612,10 @@ function buildImageContainer(){
     var btn = document.createElement("BUTTON");   // Create a <button> element
     btn.innerHTML = "Clear Image";
     btn.onclick = clearImage;
+    btn.style.cssText = tabButtonStyle
     divButtonToolBar.appendChild(btn);
+
+
 
     divCanvasContainer.addEventListener('mousemove', function(e) {
         getCursorPosition(canvas, e)
@@ -593,6 +626,8 @@ function buildImageContainer(){
     divInformationBar.appendChild(mcoord);
 
     divImageContainer.appendChild(divButtonToolBar)
+    let spacer = document.createElement("P")
+    divImageContainer.appendChild(spacer);
     divImageContainer.appendChild(divCanvasContainer)
     divImageContainer.appendChild(divInformationBar)
 
