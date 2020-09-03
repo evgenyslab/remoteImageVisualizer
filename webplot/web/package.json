@@ -1,0 +1,30 @@
+{
+  "name": "remoteimagevisualizer",
+  "version": "1.0.0",
+  "description": "- need to have npm installed with browserify, and msgpack-lite to run the js bundling before deployment",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node remoteimagevisualizer/web/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evgenyslab/remoteImageVisualizer.git"
+  },
+  "author": "E.Nuger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/evgenyslab/remoteImageVisualizer/issues"
+  },
+  "homepage": "https://github.com/evgenyslab/remoteImageVisualizer#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "msgpack-lite": "^0.1.26",
+    "plotly": "^1.0.6",
+    "plotly.js-dist": "^1.54.7"
+  }
+}
