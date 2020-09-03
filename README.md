@@ -14,8 +14,28 @@ then removed...
 
 ## Pre-reqs
 
-- [ ] (uWebSocketsPython)[]
+- [ ] webSockets:
+    
+    This can be installed into a local virual env:
+    
+    ```bash
+    git clone https://github.com/evgenyslab/webSockets.git
+    # active local virtual environment
+    # using virtual environemt:
+    cd webSockets/
+    python setup.py install
+    ```
+    
 - [ ] Libturbojpeg
+
+## FIGURE PLOTTING
+
+The web-backend uses Plotly. Please refer to [HERE](https://plotly.com/javascript/basic-charts/)
+for examples that show you how to format data dictionary to pass, including layouts.
+
+**MAIN NOTE** the webplot uses a `figure` tag at the top level of the dictionary to
+indication figure information, and a `figureConfiguration` tag to indicate figure 
+layout information.
 
 ## Limitations
 
@@ -36,28 +56,107 @@ JPEG compression + image size + processing power will limit the maximum framerat
 
 ## Example
 
+### Displaying Image
+
 ```python
 import numpy as np
 import time
 from webplot import webplot
 
 # Create visualizer object:
-vis = webplot.remoteimagevisualizer()
+wp = webplot()
 
 # Create video-like stream of noisy image
-while True:
+for _ in range(100):
     image = ((np.random.rand(200,400,3))*256).astype(np.uint8)
-
     # show image
-    vis.show(image)
-    # change quality 50%:
-    vis.showAsJPEG(image, quality=50)
-    # change quality 95%:
-    vis.showAsJPEG(image, quality=95)
-    # show as PNG no compression:
-    vis.showAsPNG(image, quality=0)
-    # show as PNG  max compression:
-    vis.showAsPNG(image, quality=9)
-    # delay for 100ms (can drop it down to 10ms
+    wp.show(image)
     time.sleep(0.1)
+```
+
+### Displaying Figure
+
+```python
+import numpy as np
+import time
+from webplot import webplot
+
+# Create visualizer object:
+wp = webplot()
+
+npts = 500
+# create plotly data object:
+dataPlotly = {
+    'figure': {
+        'x': np.random.rand(1, npts).flatten().tolist(),
+        'y': np.random.rand(1, npts).flatten().tolist(),
+        'z': np.random.rand(1, npts).flatten().tolist(),
+        'mode': 'markers',
+        'marker': {
+            'size': 12,
+            'line': {
+                'color': 'rgba(217, 217, 217, 0.14)',
+                'width': 0.5
+            },
+            'opacity': 0.5
+        },
+        'type': 'scatter3d',
+        'showscale': False
+    }
+}
+# plot it:
+wp.plot(dataPlotly)
+
+# UPDATE ONLY LAYOUT:
+dataPlotlyConfig = {
+    'figureConfiguration': {
+        'scene': {
+            'xaxis': {'range': [-1, 1]},
+            'yaxis': {'range': [-2, 2]},
+            'zaxis': {'range': [-3, 3]},
+            'aspectmode': 'manual',
+            'aspectratio': {
+                'x': 1,
+                'y': 1,
+                'z': 1,
+            }
+        }
+    }
+}
+# MAKE SURE TO SELECT PLOT!
+wp.plot(dataPlotlyConfig)
+
+# PLOT AND LAYOUT!
+dataFigureAndConfig = {
+    'figure': {
+        'x': np.random.rand(1, npts).flatten().tolist(),
+        'y': np.random.rand(1, npts).flatten().tolist(),
+        'z': np.random.rand(1, npts).flatten().tolist(),
+        'mode': 'markers',
+        'marker': {
+            'size': 12,
+            'line': {
+                'color': 'rgba(217, 217, 217, 0.14)',
+                'width': 0.5
+            },
+            'opacity': 0.5
+        },
+        'type': 'scatter3d',
+        'showscale': False
+    },
+    'figureConfiguration': {
+        'scene': {
+            'xaxis': {'range': [-1, 1]},
+            'yaxis': {'range': [-2, 2]},
+            'zaxis': {'range': [-3, 3]},
+            'aspectmode': 'manual',
+            'aspectratio': {
+                'x': 1,
+                'y': 1,
+                'z': 1,
+            }
+        }
+    }
+}
+wp.plot(dataFigureAndConfig)
 ```

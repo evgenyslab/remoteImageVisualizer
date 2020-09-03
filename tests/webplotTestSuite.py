@@ -3,7 +3,7 @@
 import unittest
 import numpy as np
 import time
-from webplot.webplot import webplot
+from webplot import webplot
 
 class TestModule(unittest.TestCase):
     def testPlot(self):

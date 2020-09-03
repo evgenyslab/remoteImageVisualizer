@@ -8,7 +8,7 @@ setup(
     description='Remote Image Visualization toolbox',
     author='E.nuger',
     author_email='',
-    url='https://github.com/evgenyslab/remoteImageVisualizer/',
+    url='https://github.com/evgenyslab/webplot/',
     keywords=[],
     classifiers=[],
     package_data={'': ['*.js', '*.html']},
