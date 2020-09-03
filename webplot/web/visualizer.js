@@ -73,6 +73,7 @@ let disconnectButtonStyle =
     "padding: 10px 24px;"
 "cursor: pointer;";
 
+
 let state = {
     pageSettings:{
         tabs:["image","plot","misc"],
@@ -86,6 +87,14 @@ let state = {
             {name:"Other",
                 id:"enableOtherView",
                 fx:setPageToOther},
+        ],
+        controlButtons:[
+            {name:"Start/Stop",
+                id:"buttonStartStop",
+                fx:sendMessageStartStopDataFeed},
+            {name:"Reverse",
+                id:"buttonReverse",
+                fx:sendMessageDataFeedToReverse},
         ],
         tabContainers:
             ["imageContainer",
@@ -113,6 +122,7 @@ let state = {
         canvasHeight:0,
         canvasWidthAvailable:0,
         canvasHeightAvailable:0,
+        displayScale:1,
         loaded:false,
         data: null,
         image:new Image,
@@ -159,6 +169,30 @@ function registerImageOnLoad(){
         state.imageData.loaded = true;
         console.log(state.imageData)
     };
+}
+
+function sendMessageStartStopDataFeed(){
+    if (state.wsData.connected){
+        let msg = msgpack.encode({
+            control: 'togglePausePlay'
+        });
+        state.wsData.ws.send(
+            "blah"
+        );
+        state.wsData.ws.send(
+            ["blah", "blah"]
+        );
+    }
+}
+function sendMessageDataFeedToReverse(){
+    if (state.wsData.connected){
+        let msg = msgpack.encode({
+            control: 'toggleReverse'
+        });
+        state.wsData.ws.send(
+            msg
+        );
+    }
 }
 
 function initializePlotlyLayout(){
@@ -228,10 +262,18 @@ function setPageToOther(){
 
 function getCursorPosition(canvas, event) {
     if(state.imageData.loaded) {
-        const rect = canvas.getBoundingClientRect();
+        let rect = canvas.getBoundingClientRect();
         // TODO: clamp to image size + apply scaling!
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        let x = (event.clientX - rect.left)*state.imageData.displayScale;
+        let y = (event.clientY - rect.top)*state.imageData.displayScale;
+        if (y < 0)
+            y = 0
+        if (x < 0)
+            x = 0
+        if (y > state.imageData.height)
+            y = state.imageData.height
+        if (x > state.imageData.width)
+            x = state.imageData.width
         document.getElementById('mouseCoordinates').innerHTML = "x: " + x + " y: " + y;
     }
 
@@ -314,7 +356,7 @@ function configureImageCanvas(){
     let _rx = state.imageData.width/state.imageData.canvasWidthAvailable
     let _ry = state.imageData.height/state.imageData.canvasHeightAvailable
     let aspectRatio = state.imageData.height/state.imageData.width
-    let scale = -1
+    let scale = 1
     if (_rx > 1 && _rx > _ry){
         // resize canvas based on width
         context.canvas.width = state.imageData.canvasWidthAvailable;
@@ -332,6 +374,7 @@ function configureImageCanvas(){
         context.canvas.width = state.imageData.width;
         context.canvas.height = state.imageData.height;
     }
+    state.imageData.displayScale = scale
     state.imageData.canvasWidth = context.canvas.width
     state.imageData.canvasHeight = context.canvas.height
 }
@@ -394,7 +437,6 @@ function updateCanvasSize(){
 
 updateFigure = (data) =>{
     let plot = document.getElementById('figureCanvasContainer')
-    // TODO: check if layout directive is in data, if it is, split it out!
     console.log(data)
 
     if (!state.plotData.hasPlotted){
@@ -499,6 +541,16 @@ function buildHeader(){
     });
     btn.style.cssText = disconnectButtonStyle
     divHeaderButtonToolBar.appendChild(btn);
+
+    state.pageSettings.controlButtons.forEach((buttonSpec)=>{
+        btn = document.createElement("BUTTON");   // Create a <button> element
+        btn.id = buttonSpec.id
+        btn.innerHTML = buttonSpec.name
+        // btn.onclick = clearImage;
+        btn.onclick = buttonSpec.fx;
+        btn.style.cssText = tabButtonStyle
+        divHeaderButtonToolBar.appendChild(btn);
+    })
 
     let spacer = document.createElement("P")
 
