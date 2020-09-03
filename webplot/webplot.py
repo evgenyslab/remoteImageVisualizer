@@ -43,17 +43,16 @@ class webplot:
             print(E)
 
     def showAsJPEG(self, img=None, quality=85):
-        """
+        """!
+        Note: turbo jpeg default requires BGR Image!
 
-                :param img: nxmxc numpy array of image
-                :return:
-                """
+        @param img: nxmxc numpy array of image
+        @return:
+        """
         try:
             # if everything is running, package image into jpeg + msgpack, server with server
             data = {
-                b"image": jpeg.encode(img, quality=quality),
-                # "width": img.shape[1],
-                # "height": img.shape[0]
+                "image": jpeg.encode(img, quality=quality),
             }
 
             packed = msgpack.packb(data)
@@ -61,37 +60,16 @@ class webplot:
         except Exception as E:
             print(E)
 
-    def showAsPNG(self, img=None, quality=1):
-        """
 
-        :param img: nxmxc numpy array of image
-        :return:
+    def plot(self, fig=None):
+        """!
+
+        @param dict fig: plotly-style dictionary with 'figure' directive for figure, 'figureConfiguration' for layout,
+                        one, or the other.
+        @return:
         """
         try:
-            # if everything is running, package image into jpeg + msgpack, server with server
-            data = {
-                b"image": cv2.imencode('.png', img, [cv2.IMWRITE_PNG_COMPRESSION, quality])[1].tobytes(),
-                # "width": img.shape[1],
-                # "height": img.shape[0]
-            }
-
-            packed = msgpack.packb(data)
-            self.uwserver.sendStringAsBinary(packed)
-        except Exception as E:
-            print(E)
-
-    def showFig(self, fig=None):
-        try:
-            fhtml = fth(fig)
-            figHTMLcombined = fhtml.split("<script>")
-            figHTML = figHTMLcombined[0]
-            figJS = figHTMLcombined[1].replace("</script>", "")
-            dataFig = {
-                b'figure': True,
-                b'html': figHTML,
-                b'js': figJS
-            }
-            self.uwserver.sendStringAsBinary(msgpack.packb(dataFig))
+            self.uwserver.sendStringAsBinary(msgpack.packb(fig))
         except Exception as E:
             print(E)
 

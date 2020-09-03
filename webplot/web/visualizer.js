@@ -383,8 +383,8 @@ function updateCanvasSize(){
 }
 
 updateFigure = (data) =>{
-    // console.log(data)
     let plot = document.getElementById('figureCanvasContainer')
+    // TODO: check if layout directive is in data, if it is, split it out!
     console.log(data)
 
     if (!state.plotData.hasPlotted){
