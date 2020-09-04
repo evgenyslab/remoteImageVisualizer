@@ -17,6 +17,7 @@ TODO: MASSIVELY CLEANUP NOMENCLARURE!
 - [x] AUTO RESIZE PLOT
 - [ ] NOTIFICATION THAT DATA WAS RECEIVED AT TOP!
 - [x] Auto Toggel to first data type received
+- [ ] pixel data on mouse-over
 
 - [ ] __FUTURE__ auto build with json object
 - [ ] __FUTURE__ Auto create multiple graphs/images based on ID, up to max
@@ -144,7 +145,7 @@ let state = {
 
 function registerImageOnLoad(){
     state.imageData.image.onload= function() { //this doesnt work when this is an arrow function...
-        console.log( 'image received, size: '+this.width+' '+ this.height );
+        // console.log( 'image received, size: '+this.width+' '+ this.height );
         // document.getElementById('imageContainer').style.display = "block";
         // OLD: (will display full size)
         // document.querySelector("#image").src = this.src;
@@ -168,7 +169,7 @@ function registerImageOnLoad(){
         context.drawImage(state.imageData.image, 0, 0,  state.imageData.canvasWidth,
             state.imageData.canvasHeight);
         state.imageData.loaded = true;
-        console.log(state.imageData)
+        // console.log(state.imageData)
     };
 }
 
@@ -286,8 +287,8 @@ function getCursorPosition(canvas, event) {
     if(state.imageData.loaded) {
         let rect = canvas.getBoundingClientRect();
         // TODO: clamp to image size + apply scaling!
-        let x = (event.clientX - rect.left)*state.imageData.displayScale;
-        let y = (event.clientY - rect.top)*state.imageData.displayScale;
+        let x = parseInt((event.clientX - rect.left)*state.imageData.displayScale);
+        let y = parseInt((event.clientY - rect.top)*state.imageData.displayScale);
         if (y < 0)
             y = 0
         if (x < 0)
@@ -296,7 +297,10 @@ function getCursorPosition(canvas, event) {
             y = state.imageData.height
         if (x > state.imageData.width)
             x = state.imageData.width
-        document.getElementById('mouseCoordinates').innerHTML = "x: " + x + " y: " + y;
+        var context = canvas.getContext('2d');
+        var pixelData = context.getImageData((event.clientX - rect.left), (event.clientY - rect.top), 1, 1).data;
+        document.getElementById('mouseCoordinates').innerHTML = "x: " + x + "\t\ty: " + y +
+            "\t\t(" + pixelData[0] + ", " + pixelData[1] + ", " + pixelData[2] + ")";
     }
 
 }
@@ -412,7 +416,7 @@ function configureImageCanvas(){
 function redrawImage(){
     var canvas = document.getElementById('imageCanvasContainer');
     var context = canvas.getContext('2d');
-    console.log(state.imageData)
+    // console.log(state.imageData)
     context.drawImage(state.imageData.image, 0, 0,  state.imageData.canvasWidth,
         state.imageData.canvasHeight);
 }
@@ -459,7 +463,6 @@ function updateCanvasSize(){
     if (document.getElementById('imageContainer')!==null){
         offsetWidth = canvas.offsetWidth;
         offsetHeight = canvas.offsetHeight;
-        console.log("sphinx page width: ", page.offsetWidth);
         // width is set by browser, height is set by camera
         canvas.width = page.offsetWidth;
         canvas.height = offsetHeight;
@@ -479,16 +482,22 @@ updateFigure = (data) =>{
     if (state.pageState.currentView===null)
         changeStateFromNoneToFirst("Plot")
     let plot = document.getElementById('figureCanvasContainer')
-    console.log(data)
+    console.log("Plot data type: ", typeof(data))
 
     if (!state.plotData.hasPlotted){
-        Plotly.newPlot(plot, [data], state.plotData.layout);
+        Plotly.newPlot(plot, data, state.plotData.layout);
         state.plotData.hasPlotted = true;
     }
     else{
         // No update available, and delete only works when theres more than 1!
-        Plotly.addTraces(plot, [trace]);
-        Plotly.deleteTraces(plot, [0]);
+        var graphDiv = document.getElementById('figureCanvasContainer')
+        let numExistingTraces = graphDiv.data.length
+        // TODO: need to better delete traces, especially if there are many
+        console.log("Existing traces: ", numExistingTraces)
+        Plotly.addTraces(plot, data);
+        console.log("Now traces: ", graphDiv.data.length)
+        for (let i=0;i<numExistingTraces; i++)
+            Plotly.deleteTraces(plot, [0]);
     }
 };
 

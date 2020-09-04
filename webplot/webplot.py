@@ -13,13 +13,15 @@ Remote Image Visualizer Package
 """
 
 class webplot:
-    def __init__(self, webport=8889, commport=8890):
+    def __init__(self, webport=8889, commport=8890, serveDirectory=""):
         """
         Initialize remote visualizer
         :param webport: Port for web hosting
         :param commport: Port of websocket back-end communication
         """
-        self.webserver = webserver(port=webport, commport=commport)  # will start serving automatically
+        self.webserver = webserver(port=webport,
+                                   commport=commport,
+                                   serveDirectory=serveDirectory)  # will start serving automatically
         self.uwserver = Server(port=commport)  # need params here...
         self.uwserver.run()
 

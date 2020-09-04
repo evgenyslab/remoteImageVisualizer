@@ -41,20 +41,14 @@ class webserver:
     """
 
     """
-    def __init__(self, host="0.0.0.0", port=8889, commport=8890):
+    def __init__(self, host="0.0.0.0", port=8889, commport=8890, serveDirectory=""):
         """!
 
         @param host:
         @param port:
         """
-        html = p.resource_filename('webplot', 'web/index.html')
-        script = p.resource_filename('webplot', 'web/visualizer.js')
-        assert(os.path.isfile(html))
-        assert(os.path.isfile(script))
-        # TODO: need to close these files after reading them
-        self.html = open(html, "r").read()
-        self.script = open(script, "r").read()
-        self.script = self.script.replace("port: \"7777\"", "port: \"" + str(commport) + "\"")
+        html, script = self.__getSources__(serveDirectory=serveDirectory)
+        self.__loadWebFiles__(html=html, script=script, commport=commport)
         self.handler = generate_handler(self.html, scripts=[self.script])
         self.host = host
         self.port = port
@@ -63,6 +57,31 @@ class webserver:
         self.serverThread = None
         self.start()
 
+    def __loadWebFiles__(self, html="", script="", commport=0):
+        assert(html != "")
+        assert(script != "")
+        assert(commport != 0)
+        with open(html, "r") as f:
+            self.html = f.read()
+        with open(script, "r") as f:
+            self.script = f.read()
+        # set requested communication port
+        self.script = self.script.replace("port: \"7777\"", "port: \"" + str(commport) + "\"")
+
+    @staticmethod
+    def __getSources__(serveDirectory=""):
+        if serveDirectory != "":
+            htmlExternal = serveDirectory + ('/' if serveDirectory[-1] != '/' else '') + 'index.html'
+            scriptExternal = serveDirectory + ('/' if serveDirectory[-1] != '/' else '') + 'visualizer.js'
+            # check if it is a directory
+            if os.path.isdir(serveDirectory) and  os.path.isfile(htmlExternal) and  os.path.isfile(scriptExternal):
+                return htmlExternal, scriptExternal
+        else:
+            html = p.resource_filename('webplot', 'web/index.html')
+            script = p.resource_filename('webplot', 'web/visualizer.js')
+            assert(os.path.isfile(html))
+            assert(os.path.isfile(script))
+            return html, script
 
     def stop(self):
         """
@@ -72,7 +91,6 @@ class webserver:
         self.server.shutdown()
         self.serverThread.join()
         print("Stopping web serving")
-
 
     def start(self):
         """
