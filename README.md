@@ -43,16 +43,9 @@ JPEG compression + image size + processing power will limit the maximum framerat
 
 ## TODO
 
-- replace cv2 png compression with libpng/ something simpler
-- js auto resize image to window size
-- js display cursor pixel position
 - js allow zoom in
 - open image in new window (popup)
-- can manifest file be removed?
-- can html be auto generated in runtime?
-- UNBIND SOCKET FROM HTTP (done)
 - clean webserver thread exit needed on ctrl-c or ctrl-d
-
 
 ## Example
 
@@ -72,6 +65,40 @@ for _ in range(100):
     # show image
     wp.show(image)
     time.sleep(0.1)
+
+# Show image with 'decorators', i.e. lines, rects, and text overlaid:
+img = ((np.random.rand(1000, 1000, 3)) * 256).astype(np.uint8)
+# Decorators are formatted as a list of dictionary items. Each dictionary item has
+# type, data, and style, examples below. Style uses HTML5 canvas api
+decor = [
+            {
+                'type': 'rect',
+                'data': [10, 10, 40, 50],
+                'style': {
+                    'lineWidth': 1,
+                    'strokeStyle': 'blue'
+                   }
+             },
+            {
+                'type': 'line',
+                'data': [100, 100, 200, 400],
+                'style': {
+                    'lineWidth': 2,
+                    'strokeStyle': 'red'
+                   }
+             },
+            {
+                'type': 'text',
+                'data': "hello this is my text",
+                'pose': [60, 70],
+                'style': {
+                    'font': "30px Comic Sans MS",
+                    'fillStyle': 'red',
+                    'textAlign': 'center'
+                   }
+             },
+]
+wp.show(img, decorators=decor)
 ```
 
 ### Displaying Figure

@@ -66,7 +66,7 @@ class webplot:
     def stop(self):
         self.webserver.stop()
 
-    def show(self, img=None, encoding="RGB"):
+    def show(self, img=None, encoding="RGB", decorators=None):
         """!
 
         @param np.array img: nxmxc numpy array of image
@@ -80,26 +80,31 @@ class webplot:
                 img = img.squeeze()
                 img = np.stack([img, img, img], axis=2)
 
-            self.showAsJPEG(img, encoding)
+            self.showAsJPEG(img, encoding, decorators=decorators)
 
         except Exception as E:
             print(E)
 
-    def showAsJPEG(self, img=None, encoding="RGB", quality=85):
+    def showAsJPEG(self, img=None, encoding="RGB", quality=85, decorators=None):
         """!
         Note: turbo jpeg default requires BGR Image!
 
         @param np.array img: nxmxc numpy array of image
         @param string encoding: encoding string
         @param quality: compression quality
+        @param list decorators: a list of dict items, one per decorator (line/rect/text) using HTML5 canvas api.
         @return:
         """
         try:
             sourceEncoding = self.__getEncoding__(encoding)
             # if everything is running, package image into jpeg + msgpack, server with server
             data = {
-                "image": jpeg.encode(img, pixel_format=sourceEncoding, quality=quality),
+                "image": {
+                    "raw":  jpeg.encode(img, pixel_format=sourceEncoding, quality=quality)
+                },
             }
+            if isinstance(decorators, list):
+                data['image']['decorators'] = decorators
 
             packed = msgpack.packb(data)
             self.uwserver.sendStringAsBinary(packed)

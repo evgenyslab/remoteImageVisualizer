@@ -128,6 +128,7 @@ let state = {
         loaded:false,
         data: null,
         image:new Image,
+        decorators: null,
     },
     plotData:{
         configure:false,
@@ -141,6 +142,71 @@ let state = {
         layout: null,
         hasPlotted: false,
     }
+}
+
+function drawImageDecorator(decorator, context){
+    console.log(decorator.type)
+    // TODO: map string decorator.type to draw functions
+    // TODO: allow relative drawing if any data coordinates are <=1
+    if (decorator.type==='line'){
+        context.beginPath();
+        context.moveTo(decorator.data[0],
+                       decorator.data[1]);
+        context.lineTo(decorator.data[2],
+                       decorator.data[3]);
+        if (decorator.style.lineWidth !== undefined){
+            context.lineWidth = decorator.style.lineWidth;
+        }else
+            context.lineWidth = 1
+        if (decorator.style.strokeStyle !== undefined){
+            context.strokeStyle = decorator.style.strokeStyle;
+        }else
+            context.strokeStyle = 'black'
+        context.stroke();
+        return
+    }
+    if (decorator.type==='rect'){
+        // TODO: Validate input data
+        context.beginPath();
+        context.rect(decorator.data[0],
+                     decorator.data[1],
+                     decorator.data[2],
+                     decorator.data[3]);
+        if (decorator.style.fillStyle !== undefined){
+            context.fillStyle = decorator.style.fillStyle;
+            context.fill();
+        }
+        if (decorator.style.lineWidth !== undefined){
+            context.lineWidth = decorator.style.lineWidth;
+        }else
+            context.lineWidth = 1
+        if (decorator.style.strokeStyle !== undefined){
+            context.strokeStyle = decorator.style.strokeStyle;
+        }else
+            context.strokeStyle = 'black'
+        context.stroke();
+        return
+    }
+    if (decorator.type==='text'){
+        if (decorator.style.font !== undefined){
+            context.font = decorator.style.font;
+        }else
+            context.font="20px Arial";
+
+        if (decorator.style.fillStyle !== undefined){
+            context.fillStyle = decorator.style.fillStyle;
+        }else
+            context.fillStyle="red";
+
+        if (decorator.style.textAlign !== undefined){
+            context.textAlign = decorator.style.textAlign;
+        }else
+            context.textAlign="center";
+
+        context.fillText(decorator.data,decorator.pose[0],
+            decorator.pose[1]);
+    }
+
 }
 
 function registerImageOnLoad(){
@@ -168,8 +234,12 @@ function registerImageOnLoad(){
             configureImageCanvas()
         context.drawImage(state.imageData.image, 0, 0,  state.imageData.canvasWidth,
             state.imageData.canvasHeight);
+        if (state.imageData.decorators !== null){
+            state.imageData.decorators.forEach((decorator)=>{
+                drawImageDecorator(decorator, context)
+            })
+        }
         state.imageData.loaded = true;
-        // console.log(state.imageData)
     };
 }
 
@@ -447,7 +517,11 @@ function changeStateFromNoneToFirst(message){
 updateImage = (data) =>{
     if (state.pageState.currentView===null)
         changeStateFromNoneToFirst("Image")
-    let blob = new Blob ([data]);
+    //
+    let blob = new Blob ([data.raw]);
+    // append any decorators:
+    if (data["decorators"] !== undefined)
+        state.imageData.decorators = data['decorators']
     state.imageData.image.src = URL.createObjectURL(blob);
 
 };
