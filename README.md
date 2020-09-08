@@ -87,22 +87,25 @@ wp = webplot()
 npts = 500
 # create plotly data object:
 dataPlotly = {
-    'figure': {
-        'x': np.random.rand(1, npts).flatten().tolist(),
-        'y': np.random.rand(1, npts).flatten().tolist(),
-        'z': np.random.rand(1, npts).flatten().tolist(),
-        'mode': 'markers',
-        'marker': {
-            'size': 12,
-            'line': {
-                'color': 'rgba(217, 217, 217, 0.14)',
-                'width': 0.5
+    'figure': 
+    [
+        {
+            'x': np.random.rand(1, npts).flatten().tolist(),
+            'y': np.random.rand(1, npts).flatten().tolist(),
+            'z': np.random.rand(1, npts).flatten().tolist(),
+            'mode': 'markers',
+            'marker': {
+                'size': 12,
+                'line': {
+                    'color': 'rgba(217, 217, 217, 0.14)',
+                    'width': 0.5
+                },
+                'opacity': 0.5
             },
-            'opacity': 0.5
-        },
-        'type': 'scatter3d',
-        'showscale': False
-    }
+            'type': 'scatter3d',
+            'showscale': False
+        }
+    ]
 }
 # plot it:
 wp.plot(dataPlotly)
@@ -128,22 +131,25 @@ wp.plot(dataPlotlyConfig)
 
 # PLOT AND LAYOUT!
 dataFigureAndConfig = {
-    'figure': {
-        'x': np.random.rand(1, npts).flatten().tolist(),
-        'y': np.random.rand(1, npts).flatten().tolist(),
-        'z': np.random.rand(1, npts).flatten().tolist(),
-        'mode': 'markers',
-        'marker': {
-            'size': 12,
-            'line': {
-                'color': 'rgba(217, 217, 217, 0.14)',
-                'width': 0.5
+    'figure': 
+    [
+        {
+            'x': np.random.rand(1, npts).flatten().tolist(),
+            'y': np.random.rand(1, npts).flatten().tolist(),
+            'z': np.random.rand(1, npts).flatten().tolist(),
+            'mode': 'markers',
+            'marker': {
+                'size': 12,
+                'line': {
+                    'color': 'rgba(217, 217, 217, 0.14)',
+                    'width': 0.5
+                },
+                'opacity': 0.5
             },
-            'opacity': 0.5
-        },
-        'type': 'scatter3d',
-        'showscale': False
-    },
+            'type': 'scatter3d',
+            'showscale': False
+        }
+    ],
     'figureConfiguration': {
         'scene': {
             'xaxis': {'range': [-1, 1]},
