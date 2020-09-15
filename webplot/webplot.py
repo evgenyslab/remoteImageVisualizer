@@ -12,6 +12,7 @@ jpeg = TurboJPEG()
 Remote Image Visualizer Package
 """
 
+
 class webplot:
     def __init__(self, webport=8889, commport=8890, serveDirectory=""):
         """
@@ -59,6 +60,12 @@ class webplot:
         # TODO: how to make this a call back that actives when uwserver.readNonBlocking() is not null?
         # maybe need to put callback in uwserver; maybe asyncio
         message = self.uwserver.readNonBlocking()
+        if len(message) > 0:
+            return self.__tryToDecodeMessage__(message)
+        return []
+
+    def getLastMessage(self):
+        message = self.uwserver.readLastNonBlocking()
         if len(message) > 0:
             return self.__tryToDecodeMessage__(message)
         return []

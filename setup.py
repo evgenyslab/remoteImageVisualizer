@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name='webplot',
     packages=['webplot', 'webplot.web'],
-    version='0.4',
+    version='0.5',
     description='Remote Image Visualization toolbox',
     author='E.nuger',
     author_email='',
