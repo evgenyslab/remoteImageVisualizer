@@ -73,7 +73,7 @@ class webplot:
     def stop(self):
         self.webserver.stop()
 
-    def show(self, img=None, encoding="RGB", decorators=None):
+    def show(self, img=None, id=0, encoding="RGB", decorators=None):
         """!
 
         @param np.array img: nxmxc numpy array of image
@@ -87,12 +87,12 @@ class webplot:
                 img = img.squeeze()
                 img = np.stack([img, img, img], axis=2)
 
-            self.showAsJPEG(img, encoding, decorators=decorators)
+            self.showAsJPEG(img, id, encoding, decorators=decorators)
 
         except Exception as E:
             print(E)
 
-    def showAsJPEG(self, img=None, encoding="RGB", quality=85, decorators=None):
+    def showAsJPEG(self, img=None, id=0, encoding="RGB", quality=85, decorators=None):
         """!
         Note: turbo jpeg default requires BGR Image!
 
@@ -107,7 +107,8 @@ class webplot:
             # if everything is running, package image into jpeg + msgpack, server with server
             data = {
                 "image": {
-                    "raw":  jpeg.encode(img, pixel_format=sourceEncoding, quality=quality)
+                    "id": id,
+                    "raw": jpeg.encode(img, pixel_format=sourceEncoding, quality=quality)
                 },
             }
             if isinstance(decorators, list):
