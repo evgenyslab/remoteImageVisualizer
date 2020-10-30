@@ -67,6 +67,21 @@ class webserver:
             self.script = f.read()
         # set requested communication port
         self.script = self.script.replace("port: \"7777\"", "port: \"" + str(commport) + "\"")
+        # add local plotly & msgpack scripts:
+        scriptPlotly = p.resource_filename('webplot', 'web/plotly-latest.min.js')
+        scriptMsgpack = p.resource_filename('webplot', 'web/msgpack.min.js')
+        assert (os.path.isfile(scriptPlotly))
+        assert (os.path.isfile(scriptMsgpack))
+        with open(scriptPlotly, "r") as f:
+            scriptPlotlyRaw = f.read()
+        with open(scriptMsgpack, "r") as f:
+            scriptMsgpackRaw = f.read()
+
+        self.html = self.html + "\n\n" + \
+                                "<script>" + scriptMsgpackRaw + "</script>\n" + \
+                                "<script>" + scriptPlotlyRaw + "</script>\n"
+
+
 
     @staticmethod
     def __getSources__(serveDirectory=""):
