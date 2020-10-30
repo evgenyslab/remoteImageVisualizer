@@ -27,6 +27,9 @@ then removed...
     ```
     
 - [ ] Libturbojpeg
+    ```bash
+    sudo apt-get install libturbojpeg  
+  ```
 
 ## FIGURE PLOTTING
 
